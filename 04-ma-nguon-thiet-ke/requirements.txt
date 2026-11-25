@@ -1,0 +1,4 @@
+playwright      # chụp ảnh PNG từ HTML (cần Chrome)
+pillow          # ghép ảnh, xuất PDF
+fonttools       # chuyển chữ thành nét vẽ cho file in
+pypdf

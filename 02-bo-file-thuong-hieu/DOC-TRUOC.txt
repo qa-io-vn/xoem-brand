@@ -1,0 +1,26 @@
+BỘ FILE THƯƠNG HIỆU XO EM
+
+1-Logo        Logo chính (biểu tượng ghế-ly + chữ "xo em"): ngang, dọc, chỉ biểu tượng, chỉ chữ.
+              4 bản màu: mau (nền sáng), nen-toi (nền tối), den (in một màu đen), trang (in một màu trắng).
+              SVG: gửi xưởng in, làm biển, khắc, phóng to không vỡ. Chữ đã chuyển thành nét, không cần cài phông.
+              PNG: nền trong suốt, dùng cho mạng xã hội, tài liệu, thiết kế nhanh.
+2-Logo-4-o    Logo 4 ô X-O-E-M (bảng chữ trên tường quầy, tem, con dấu).
+3-Linh-vat    Boss, Em Ngả, Em Ngơ: SVG và PNG nền trong suốt.
+4-Hoa-tiet    3 mẫu họa tiết lặp (Đất Nung, Kem, Rêu): giấy gói, ly, túi, tường.
+5-Bo-nhan-dien  Cẩm nang thương hiệu đầy đủ (PDF).
+
+MÀU
+Đất Nung   #C8553D   (màu chính)
+Kem Sữa    #F6EEDF   (màu nền)
+Nâu Cà Phê #2B1D16   (chữ, đường viền)
+Vàng Bơ    #F2C14E   (điểm nhấn)
+Rêu Sồi    #5E7A4A   (dòng trà, cây)
+Cát Mịn    #E8D5B5   (màu phụ)
+Mã CMYK trong cẩm nang chỉ là quy đổi tham khảo, cần in thử để chốt màu.
+
+PHÔNG CHỮ (miễn phí, Google Fonts, giấy phép mở OFL)
+Baloo 2 ExtraBold   tiêu đề, tên món
+Be Vietnam Pro      nội dung, giá
+Patrick Hand        chữ viết tay, sticker
+
+TÊN TÀI KHOẢN GỢI Ý: @xoem.ecopark (kiểm tra còn trống trước khi tạo)
