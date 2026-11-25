@@ -15,6 +15,7 @@ Quán cà phê pha chậm ở 93 Marina, Ecopark (Văn Giang, Hưng Yên). Tên 
 | `docs/` | Bản thiết kế bấm thử (HTML), mở `docs/index.html` hoặc bật GitHub Pages để xem online | Xem luồng gọi món như thật |
 | `04-ma-nguon-thiet-ke/` | Tệp nguồn của canvas thiết kế và các script Python đã dùng để dựng | Chỉnh sửa, dựng lại khi đổi màu, đổi chữ |
 | `05-luu-tru/` | Bộ Xô Ngơ, bản so sánh logo Xofa · Xô Ngơ · Xo em, bộ cốc giấy Chử Đồng Tử | Tham khảo, không dùng chính thức |
+| `07-mo-hinh-3d/` | Boss, Em Ngả, Em Ngơ dạng 3D: tệp `.glb` có khung xương và hoạt ảnh, tệp Blender, ảnh dựng, trang xem 3D | Làm game, Zalo Mini App, video, standee |
 
 ## Màu
 
@@ -56,6 +57,8 @@ Các script trong `04-ma-nguon-thiet-ke/scripts/` là bản nháp đã dùng đ�
 - Website thêm 5 trang: Quà lưu niệm, Câu chuyện, Sự kiện & workshop, Tuyển dụng, Góc đọc.
 - Ứng dụng Zalo thêm 14 màn hình trạng thái (xin quyền, giỏ trống, lỗi thanh toán, mất mạng, bảng lương theo công, báo cáo tuần, đổi cửa hàng...).
 - Tài liệu: Đặc tả kỹ thuật và Kế hoạch đổi tên Xofa → Xo em (Claude Docs).
+
+- Linh vật 3D: Boss, Em Ngả, Em Ngơ có khung xương và hoạt ảnh (`07-mo-hinh-3d/`), xem online tại https://qa-io-vn.github.io/xoem-brand/3d/
 
 ## Phát triển tiếp
 

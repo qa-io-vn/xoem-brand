@@ -1,0 +1,605 @@
+<meta charset="utf-8">
+<title>Linh vật 3D Xo em</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Be+Vietnam+Pro:wght@400;500;600&family=Patrick+Hand&display=swap">
+<style>
+  :root {
+    --bg: #F6EEDF;
+    --surface: #FFFAF2;
+    --ink: #2B1D16;
+    --muted: #6E5B4D;
+    --line: #E6D6BE;
+    --accent: #C8553D;
+    --butter: #F2C14E;
+    --moss: #5E7A4A;
+    --sand: #E8D5B5;
+    --stage-a: #FFF8EC;
+    --stage-b: #EFDFC6;
+    --chip: #FFFFFF;
+    --chip-on: #2B1D16;
+    --chip-on-ink: #F6EEDF;
+    --focus: #C8553D;
+    --display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+    --body: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+    --hand: "Patrick Hand", "Comic Sans MS", cursive;
+    --radius: 18px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1C1411; --surface: #261B16; --ink: #F6EEDF; --muted: #C7B5A3; --line: #3B2C24;
+      --accent: #E2775D; --butter: #F2C14E; --moss: #93B07A; --sand: #E8D5B5;
+      --stage-a: #3A2A22; --stage-b: #1E1612; --chip: #2E221C; --chip-on: #F6EEDF; --chip-on-ink: #2B1D16;
+      --focus: #F2C14E; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1C1411; --surface: #261B16; --ink: #F6EEDF; --muted: #C7B5A3; --line: #3B2C24;
+    --accent: #E2775D; --butter: #F2C14E; --moss: #93B07A; --sand: #E8D5B5;
+    --stage-a: #3A2A22; --stage-b: #1E1612; --chip: #2E221C; --chip-on: #F6EEDF; --chip-on-ink: #2B1D16;
+    --focus: #F2C14E; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 15px;
+    line-height: 1.55;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 28px 48px;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 28px; }
+  header { display: grid; gap: 6px; }
+  .eyebrow { font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+  h1 { font-family: var(--display); font-weight: 800; font-size: clamp(32px, 5vw, 52px); line-height: 1.02; margin: 0; text-wrap: balance; }
+  .lede { margin: 0; color: var(--muted); max-width: 62ch; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tab {
+    font: 600 15px/1 var(--body); color: var(--ink); background: var(--chip); border: 1.5px solid var(--line);
+    border-radius: 999px; padding: 10px 16px 10px 12px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  }
+  .tab .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); }
+  .tab[aria-selected="true"] { background: var(--chip-on); color: var(--chip-on-ink); border-color: var(--chip-on); }
+  .tab[aria-selected="true"] .dot { border-color: var(--chip-on-ink); }
+  button:focus-visible, a:focus-visible, input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .main { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .main { grid-template-columns: minmax(0, 1fr); } }
+  .stage {
+    position: relative; border-radius: var(--radius); overflow: hidden; height: clamp(380px, 64vh, 680px);
+    background: radial-gradient(120% 90% at 40% 35%, var(--stage-a) 0%, var(--stage-b) 100%);
+    border: 1.5px solid var(--line);
+  }
+  .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .stage canvas:active { cursor: grabbing; }
+  .hud { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; pointer-events: none; }
+  .hud > * { pointer-events: auto; }
+  .clips, .toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font: 600 13px/1 var(--body); color: var(--ink); background: var(--chip); border: 1.5px solid var(--line);
+    border-radius: 999px; padding: 8px 12px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center;
+  }
+  .chip small { font-weight: 500; color: var(--muted); font-size: 11px; }
+  .chip[aria-pressed="true"] { background: var(--chip-on); color: var(--chip-on-ink); border-color: var(--chip-on); }
+  .chip[aria-pressed="true"] small { color: var(--chip-on-ink); opacity: 0.7; }
+  .loading {
+    position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--hand); font-size: 22px; color: var(--muted);
+    background: color-mix(in srgb, var(--stage-b) 40%, transparent);
+  }
+  .hint { position: absolute; top: 12px; right: 14px; font-size: 12px; color: var(--muted); }
+  .card { background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--radius); padding: 22px; display: grid; gap: 14px; }
+  .card h2 { font-family: var(--display); font-weight: 800; font-size: 34px; line-height: 1; margin: 0; }
+  .quote { font-family: var(--hand); font-size: 26px; line-height: 1.2; margin: 0; }
+  dl { margin: 0; display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 8px 12px; }
+  dt { font-family: var(--display); font-weight: 600; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); padding-top: 2px; }
+  dd { margin: 0; }
+  .details { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  .details li { font-size: 12.5px; border: 1px solid var(--line); border-radius: 8px; padding: 4px 8px; }
+  .files { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; display: grid; gap: 2px; }
+  .files code { font-family: ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink); font-size: 12px; }
+  section h3 { font-family: var(--display); font-weight: 800; font-size: 26px; margin: 0 0 4px; }
+  section p.sub { margin: 0 0 14px; color: var(--muted); }
+  .heroes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 720px) { .heroes { grid-template-columns: minmax(0, 1fr); } }
+  figure { margin: 0; display: grid; gap: 6px; }
+  figure img { width: 100%; height: auto; border-radius: 14px; border: 1.5px solid var(--line); display: block; background: var(--stage-a); }
+  figcaption { font-size: 13px; color: var(--muted); }
+  .wide { display: grid; gap: 14px; margin-top: 14px; }
+  .scroller { overflow-x: auto; border-radius: 14px; }
+  .scroller img { width: 100%; min-width: 720px; }
+  .usage { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .usage div { border-top: 3px solid var(--ink); padding-top: 10px; }
+  .usage b { font-family: var(--display); font-size: 17px; display: block; }
+  .usage p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .usage code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--ink); }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Xo em · 93 Marina, Ecopark</div>
+    <h1>Ba em nhà Xo em, bản 3D</h1>
+    <p class="lede">Boss giữ ghế, Em Ngả ngủ, Em Ngơ canh nhưng canh được năm phút là ngủ theo. Kéo để xoay, cuộn để phóng to, bấm vào từng động tác để xem các em cử động.</p>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="Chọn linh vật">
+    <button class="tab" role="tab" id="tab-boss" data-key="boss" aria-selected="true"><span class="dot" style="background:#C8553D"></span>Boss</button>
+    <button class="tab" role="tab" id="tab-em-nga" data-key="em-nga" aria-selected="false"><span class="dot" style="background:#F2C14E"></span>Em Ngả</button>
+    <button class="tab" role="tab" id="tab-em-ngo" data-key="em-ngo" aria-selected="false"><span class="dot" style="background:#5E7A4A"></span>Em Ngơ</button>
+    <button class="tab" role="tab" id="tab-ca-nha" data-key="ca-nha" aria-selected="false"><span class="dot" style="background:linear-gradient(90deg,#C8553D 0 33%,#F2C14E 33% 66%,#5E7A4A 66%)"></span>Cả nhà</button>
+  </div>
+
+  <div class="main">
+    <div class="stage" id="stage">
+      <canvas id="view" aria-label="Khung xem mô hình 3D"></canvas>
+      <div class="hint">Kéo để xoay · cuộn để phóng to</div>
+      <div class="loading" id="loading">Đang pha mô hình…</div>
+      <div class="hud">
+        <div class="clips" id="clips"></div>
+        <div class="toggles">
+          <button class="chip" id="t-outline" aria-pressed="true">Viền nét</button>
+          <button class="chip" id="t-toon" aria-pressed="false">Tô hoạt hình</button>
+          <button class="chip" id="t-spin" aria-pressed="false">Tự xoay</button>
+          <button class="chip" id="t-sofa" aria-pressed="true" hidden>Có sofa</button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="card" id="card" aria-live="polite"></aside>
+  </div>
+
+  <section>
+    <h3>Ảnh dựng</h3>
+    <p class="sub">Dựng bằng Cycles, ánh sáng studio, viền nét Nâu Cà Phê giống bộ nhận diện 2D. Bản PNG gốc và bản nền trong suốt nằm trong thư mục <code>07-mo-hinh-3d/anh/</code>.</p>
+    <div class="heroes">
+      <figure><img src="anh/web/Boss-hero.jpg" alt="Boss, chiếc ghế bành đất nung có mắt to mắt nhỏ, ngồi trên đĩa lót, hơi cà phê bốc trên đầu" loading="lazy"><figcaption>Boss · ngồi trên đĩa lót sứ</figcaption></figure>
+      <figure><img src="anh/web/Em-Nga-hero.jpg" alt="Em Ngả, rồng nệm màu vàng bơ đang ngủ, có bong bóng mũi và chữ z bay lên" loading="lazy"><figcaption>Em Ngả · năm phút nữa thôi</figcaption></figure>
+      <figure><img src="anh/web/Em-Ngo-hero.jpg" alt="Em Ngơ, rồng rêu xanh đứng, lè lưỡi, ly cà phê mắc trên sừng" loading="lazy"><figcaption>Em Ngơ · ly cà phê vẫn trên sừng</figcaption></figure>
+    </div>
+    <div class="wide">
+      <figure><img src="anh/web/Xoem-Linh-vat-3D-nhom.jpg" alt="Cả ba linh vật trong một khung: Em Ngả ngủ trên sofa, Boss bên phải, Em Ngơ đứng phía trước" loading="lazy"><figcaption>Cả nhà · Em Ngả trên sofa đỏ đất nung</figcaption></figure>
+      <figure><div class="scroller"><img src="anh/web/Boss-model-sheet.jpg" alt="Bảng xoay Boss: trước, ba phần tư, bên, sau" loading="lazy"></div><figcaption>Bảng xoay Boss · trước, ba phần tư, bên, sau</figcaption></figure>
+      <figure><div class="scroller"><img src="anh/web/Em-Nga-model-sheet.jpg" alt="Bảng xoay Em Ngả: trước, ba phần tư, bên, sau" loading="lazy"></div><figcaption>Bảng xoay Em Ngả</figcaption></figure>
+      <figure><div class="scroller"><img src="anh/web/Em-Ngo-model-sheet.jpg" alt="Bảng xoay Em Ngơ: trước, ba phần tư, bên, sau" loading="lazy"></div><figcaption>Bảng xoay Em Ngơ</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h3>Đưa vào game hoặc ứng dụng</h3>
+    <p class="sub">Mỗi em là một tệp <code>.glb</code> có sẵn khung xương và hoạt ảnh đặt tên. Bản <code>-lite</code> nhẹ hơn khoảng một nửa số tam giác, hợp cho điện thoại và Zalo Mini App.</p>
+    <div class="usage">
+      <div><b>Unity</b><p>Cài gói <code>glTFast</code>, kéo tệp <code>.glb</code> vào Assets. Hoạt ảnh hiện thành các clip <code>Idle</code>, <code>Walk</code>…</p></div>
+      <div><b>Godot 4</b><p>Kéo thẳng <code>.glb</code> vào dự án. AnimationPlayer nhận đủ tên động tác.</p></div>
+      <div><b>Web, Zalo Mini App</b><p>Dùng three.js <code>GLTFLoader</code> như trang này. Viền nét là shader riêng, không nằm trong tệp.</p></div>
+      <div><b>Sửa mô hình</b><p>Mở <code>07-mo-hinh-3d/blend/*.blend</code> bằng Blender 5.2, hoặc sửa script trong <code>04-ma-nguon-thiet-ke/3d/</code> rồi dựng lại.</p></div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
+<script>
+(function () {
+  const CHARACTERS = {
+    "boss": {
+      title: "Boss", color: "#C8553D", file: "glb/Boss.glb",
+      quote: "“Ngồi đi, vội gì.”",
+      rows: [["Loài", "Chiếc sofa biết nói. Chiếc ghế đầu tiên của quán, cũng chính là biểu tượng trên logo."],
+             ["Ngoại hình", "Thân Đất Nung, hai mắt lệch to nhỏ, miệng cười mỉm, ngồi trên đĩa lót, trên đầu lúc nào cũng bốc khói cà phê."],
+             ["Tính cách", "Ra vẻ nghiêm nhưng mềm nhất quán. Ai ngồi lên là bị giữ chân, không muốn về."]],
+      details: ["Vải dệt có ánh nhung", "Viền chỉ đậu quanh đệm", "Nút bọc lưng ghế kiểu trám", "35 đinh đồng", "Chân gỗ tiện", "Đĩa lót sứ hai viền", "Lông mày viền chỉ", "Hơi cà phê bay"],
+      clips: [["Idle", "Thở đều"], ["Pat", "Ngồi đi"]], main: "Idle",
+      stats: "Boss.glb · 4,1 MB · 120.476 tam giác · bản lite 55.176"
+    },
+    "em-nga": {
+      title: "Em Ngả", color: "#D9A02E", file: "glb/Em-Nga.glb", prop: "glb/Sofa-Em-Nga.glb",
+      quote: "“Năm phút nữa thôi…”",
+      rows: [["Loài", "Rồng nệm. Sống trên chiếc sofa đỏ đất nung của quán."],
+             ["Ngoại hình", "Vàng bơ, bụng cát mịn có đường khâu, sừng mềm, luôn nhắm mắt."],
+             ["Tính cách", "Chậm, mềm, chẳng vội gì. Ngủ là chuyên môn chính."]],
+      details: ["Lông nhung mịn", "46 mũi khâu quanh bụng", "Gai nệm trên lưng", "Nhãn gối thêu hạt cà phê", "Bong bóng mũi", "Đệm chân hồng", "Chỏm lông xoăn", "Chữ z bay"],
+      clips: [["Sleep", "Ngủ"], ["Stir", "Cựa mình"]], main: "Sleep",
+      stats: "Em-Nga.glb · 3,2 MB · 79.828 tam giác · bản lite 39.496 · sofa riêng 72.884"
+    },
+    "em-ngo": {
+      title: "Em Ngơ", color: "#5E7A4A", file: "glb/Em-Ngo.glb",
+      quote: "“Ơ… mình vừa định làm gì nhỉ?”",
+      rows: [["Loài", "Rồng rêu. Mọc ra từ chậu cây cạnh quầy pha."],
+             ["Ngoại hình", "Xanh rêu, mắt lệch một to một nhỏ, lè lưỡi, một cái răng, ly cà phê mắc trên sừng mà không biết."],
+             ["Tính cách", "Nhiệt tình, hay quên, không bao giờ cáu."]],
+      details: ["Da vảy rêu", "Lá rêu dọc sống lưng", "Vây tai có gân", "Ly giấy có quai", "Latte hình trái tim", "Đường khâu chữ thập", "Móng chân cát mịn", "Đuôi mũi tên đất nung"],
+      clips: [["Idle", "Đứng chơi"], ["Walk", "Đi bộ"], ["Forget", "Quên mất"]], main: "Idle",
+      stats: "Em-Ngo.glb · 4,7 MB · 114.560 tam giác · bản lite 42.384"
+    },
+    "ca-nha": {
+      title: "Cả nhà", color: "#2B1D16",
+      quote: "“Ghé vào. Ngồi xuống. Có em lo.”",
+      rows: [["Bố cục", "Em Ngả ngủ trên sofa, Boss ngồi bên phải, Em Ngơ đứng canh phía trước."],
+             ["Quan hệ", "Em Ngả ngủ trên lưng Boss, Em Ngơ thì hay quên Boss là sếp."]],
+      details: ["Ba em cùng chạy hoạt ảnh", "Sofa đỏ đất nung", "Gối ôm kem sữa"],
+      clips: [], main: null,
+      stats: "Bốn tệp .glb tải cùng lúc, khoảng 15 MB"
+    }
+  };
+  const ONE_SHOT = { Pat: true, Stir: true, Forget: true };
+  const GROUP = {
+    "boss": { pos: [1.45, 0, -0.35], rotY: -32 },
+    "em-nga": { pos: [-0.98, 0.556, -0.3], rotY: 6, scale: 0.9 },
+    "sofa": { pos: [-0.95, 0, -0.45], rotY: 6 },
+    "em-ngo": { pos: [0.0, 0, 0.95], rotY: -12 }
+  };
+
+  const canvas = document.getElementById("view");
+  const stage = document.getElementById("stage");
+  const loading = document.getElementById("loading");
+  const clipsEl = document.getElementById("clips");
+  const card = document.getElementById("card");
+  const tOutline = document.getElementById("t-outline");
+  const tToon = document.getElementById("t-toon");
+  const tSpin = document.getElementById("t-spin");
+  const tSofa = document.getElementById("t-sofa");
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.NoToneMapping;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setClearColor(0x000000, 0);
+
+  const scene = new THREE.Scene();
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new THREE.RoomEnvironment(), 0.04).texture;
+
+  const camera = new THREE.PerspectiveCamera(32, 1, 0.05, 60);
+  camera.position.set(-1.6, 1.4, 3.2);
+  const controls = new THREE.OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 0.6;
+  controls.maxDistance = 9;
+  controls.maxPolarAngle = Math.PI * 0.52;
+  controls.autoRotateSpeed = 1.2;
+
+  scene.add(new THREE.HemisphereLight(0xFFF4E6, 0x6B4A3A, 0.42));
+  const key = new THREE.DirectionalLight(0xFFF0DE, 0.72);
+  key.position.set(-2.4, 4.2, 3.0);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.left = -2.6; key.shadow.camera.right = 2.6;
+  key.shadow.camera.top = 2.6; key.shadow.camera.bottom = -2.6;
+  key.shadow.camera.near = 0.5; key.shadow.camera.far = 12;
+  key.shadow.bias = -0.0004;
+  key.shadow.radius = 4;
+  scene.add(key);
+  const fill = new THREE.DirectionalLight(0xFFE4D2, 0.2);
+  fill.position.set(3, 1.6, 2.2);
+  scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xFFF2E0, 0.5);
+  rim.position.set(1.2, 2.6, -3.2);
+  scene.add(rim);
+
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.ShadowMaterial({ opacity: 0.16 }));
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+  const blobCanvas = document.createElement("canvas");
+  blobCanvas.width = blobCanvas.height = 128;
+  const bctx = blobCanvas.getContext("2d");
+  const grad = bctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  grad.addColorStop(0, "rgba(43,29,22,0.32)");
+  grad.addColorStop(1, "rgba(43,29,22,0)");
+  bctx.fillStyle = grad;
+  bctx.fillRect(0, 0, 128, 128);
+  const blob = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(blobCanvas), transparent: true, depthWrite: false }));
+  blob.rotation.x = -Math.PI / 2;
+  blob.position.y = 0.002;
+  scene.add(blob);
+
+  const toonRamp = new THREE.DataTexture(new Uint8Array([92, 92, 92, 255, 160, 160, 160, 255, 218, 218, 218, 255]), 3, 1, THREE.RGBAFormat);
+  toonRamp.minFilter = toonRamp.magFilter = THREE.NearestFilter;
+  toonRamp.generateMipmaps = false;
+  toonRamp.needsUpdate = true;
+
+  const outlineMaterial = new THREE.MeshBasicMaterial({ color: 0x2B1D16, side: THREE.BackSide });
+  const outlineMats = {};
+  function outlineMat(width, skinned) {
+    const k = width.toFixed(4) + (skinned ? "s" : "");
+    if (outlineMats[k]) return outlineMats[k];
+    const m = outlineMaterial.clone();
+    m.onBeforeCompile = function (shader) {
+      shader.uniforms.uOutline = { value: width };
+      shader.vertexShader = "uniform float uOutline;\n" + shader.vertexShader.replace("#include <begin_vertex>", "vec3 transformed = vec3( position ) + normalize( normal ) * uOutline;");
+    };
+    m.customProgramCacheKey = function () { return "outline" + k; };
+    outlineMats[k] = m;
+    return m;
+  }
+
+  const loader = new THREE.GLTFLoader();
+  const cache = {};
+  let state = { key: null, models: [], mixers: [], actions: {}, current: null };
+
+  function setLoading(text) {
+    loading.hidden = !text;
+    if (text) loading.textContent = text;
+  }
+
+  const LOCAL = location.protocol === "file:" || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || /github\.io$/.test(location.hostname);
+
+  async function fetchBytes(url, label) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(url + " " + res.status);
+    const total = Number(res.headers.get("content-length")) || 0;
+    let body;
+    if (res.body && total) {
+      const reader = res.body.getReader();
+      const chunks = [];
+      let got = 0;
+      for (;;) {
+        const step = await reader.read();
+        if (step.done) break;
+        chunks.push(step.value);
+        got += step.value.length;
+        setLoading("Đang pha " + label + "… " + Math.min(99, Math.round(got / total * 100)) + "%");
+      }
+      body = new Uint8Array(got);
+      let at = 0;
+      chunks.forEach(function (c) { body.set(c, at); at += c.length; });
+    } else {
+      body = new Uint8Array(await res.arrayBuffer());
+    }
+    if (!url.endsWith(".txt")) return body.buffer;
+    const bin = atob(new TextDecoder().decode(body).trim());
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out.buffer;
+  }
+
+  function load(url, label) {
+    if (cache[url]) return cache[url];
+    const packed = url.replace(/\.glb$/, ".b64.txt");
+    const order = LOCAL ? [url, packed] : [packed, url];
+    cache[url] = fetchBytes(order[0], label).catch(function () { return fetchBytes(order[1], label); }).then(function (buffer) {
+      return new Promise(function (resolve, reject) {
+        loader.parse(buffer, "", function (gltf) { prepare(gltf); resolve(gltf); }, reject);
+      });
+    });
+    cache[url].catch(function () { delete cache[url]; });
+    return cache[url];
+  }
+
+  function prepare(gltf) {
+    const root = gltf.scene;
+    const hulls = [];
+    root.traverse(function (o) {
+      if (!o.isMesh) return;
+      o.castShadow = true;
+      o.receiveShadow = true;
+      const mats = Array.isArray(o.material) ? o.material : [o.material];
+      mats.forEach(function (m) {
+        if ("envMapIntensity" in m) m.envMapIntensity = 0.1;
+        if (m.sheenColor) m.sheenColor.multiplyScalar(0.45);
+      });
+      o.userData.soft = o.material;
+      o.userData.toon = Array.isArray(o.material) ? o.material.map(toToon) : toToon(o.material);
+      const width = (o.userData.outline || (o.parent && o.parent.userData.outline) || 0) * 1.15;
+      if (width > 0) hulls.push([o, width]);
+    });
+    hulls.forEach(function (pair) {
+      const o = pair[0];
+      let hull;
+      if (o.isSkinnedMesh) {
+        hull = new THREE.SkinnedMesh(o.geometry, outlineMat(pair[1], true));
+        hull.bind(o.skeleton, o.bindMatrix);
+      } else {
+        hull = new THREE.Mesh(o.geometry, outlineMat(pair[1], false));
+      }
+      hull.userData.isOutline = true;
+      hull.frustumCulled = false;
+      o.add(hull);
+    });
+    root.userData.hulls = hulls.length;
+  }
+
+  function toToon(m) {
+    const t = new THREE.MeshToonMaterial({ color: m.color.clone(), map: m.map || null, gradientMap: toonRamp, transparent: m.transparent, opacity: m.opacity, side: m.side });
+    if (m.emissive) { t.emissive = m.emissive.clone(); t.emissiveIntensity = m.emissiveIntensity; t.emissiveMap = m.emissiveMap || null; }
+    if (m.normalMap) { t.normalMap = m.normalMap; t.normalScale = m.normalScale.clone(); }
+    return t;
+  }
+
+  function applyLook() {
+    const toon = tToon.getAttribute("aria-pressed") === "true";
+    const outline = tOutline.getAttribute("aria-pressed") === "true";
+    state.models.forEach(function (root) {
+      root.traverse(function (o) {
+        if (o.userData.isOutline) { o.visible = outline; return; }
+        if (o.isMesh && o.userData.soft) o.material = toon ? o.userData.toon : o.userData.soft;
+      });
+    });
+  }
+
+  function place(root, spec) {
+    root.position.set(spec.pos[0], spec.pos[1], spec.pos[2]);
+    root.rotation.set(0, THREE.MathUtils.degToRad(spec.rotY || 0), 0);
+    const s = spec.scale || 1;
+    root.scale.set(s, s, s);
+  }
+
+  function fit(objects, dir, tightness) {
+    const box = new THREE.Box3();
+    objects.forEach(function (o) { o.updateMatrixWorld(true); box.expandByObject(o); });
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    const center = sphere.center;
+    const fov = THREE.MathUtils.degToRad(camera.fov);
+    const aspectFov = camera.aspect < 1 ? 2 * Math.atan(Math.tan(fov / 2) * camera.aspect) : fov;
+    const dist = sphere.radius / Math.sin(aspectFov / 2) * (tightness || 0.86);
+    const d = new THREE.Vector3(dir[0], dir[1], dir[2]).normalize();
+    controls.target.copy(center);
+    camera.position.copy(center).addScaledVector(d, dist);
+    camera.near = dist / 50;
+    camera.far = dist * 20;
+    camera.updateProjectionMatrix();
+    blob.scale.set(sphere.radius * 1.6, sphere.radius * 1.6, 1);
+    blob.position.x = center.x;
+    blob.position.z = center.z;
+    controls.update();
+  }
+
+  function clearScene() {
+    state.models.forEach(function (m) { scene.remove(m); });
+    state.mixers.forEach(function (mx) { mx.stopAllAction(); });
+    state = { key: null, models: [], mixers: [], actions: {}, current: null };
+  }
+
+  function makeMixer(gltf, root) {
+    const mixer = new THREE.AnimationMixer(root);
+    const actions = {};
+    gltf.animations.forEach(function (clip) { actions[clip.name] = mixer.clipAction(clip); });
+    mixer.addEventListener("finished", function () {
+      const spec = CHARACTERS[state.key];
+      if (spec && spec.main) play(spec.main);
+    });
+    return { mixer: mixer, actions: actions };
+  }
+
+  function play(name) {
+    const next = state.actions[name];
+    if (!next) return;
+    const prev = state.current ? state.actions[state.current] : null;
+    next.reset();
+    if (ONE_SHOT[name]) { next.setLoop(THREE.LoopOnce, 1); next.clampWhenFinished = false; }
+    else next.setLoop(THREE.LoopRepeat, Infinity);
+    next.play();
+    if (prev && prev !== next) prev.crossFadeTo(next, 0.35, false);
+    state.current = name;
+    Array.prototype.forEach.call(clipsEl.children, function (b) { b.setAttribute("aria-pressed", String(b.dataset.clip === name)); });
+  }
+
+  function renderCard(key) {
+    const c = CHARACTERS[key];
+    const rows = c.rows.map(function (r) { return "<dt>" + r[0] + "</dt><dd>" + r[1] + "</dd>"; }).join("");
+    const details = c.details.map(function (d) { return "<li>" + d + "</li>"; }).join("");
+    card.innerHTML = '<h2 style="color:' + (key === "ca-nha" ? "var(--ink)" : c.color) + '">' + c.title + '</h2>' +
+      '<p class="quote">' + c.quote + '</p><dl>' + rows + '</dl>' +
+      '<div><dt style="margin-bottom:6px">Chi tiết 3D</dt><ul class="details">' + details + '</ul></div>' +
+      '<div class="files"><code>' + c.stats + '</code></div>';
+  }
+
+  function renderClips(key) {
+    const c = CHARACTERS[key];
+    clipsEl.innerHTML = "";
+    c.clips.forEach(function (pair) {
+      const b = document.createElement("button");
+      b.className = "chip";
+      b.dataset.clip = pair[0];
+      b.setAttribute("aria-pressed", "false");
+      b.innerHTML = pair[1] + " <small>" + pair[0] + "</small>";
+      b.addEventListener("click", function () { play(pair[0]); });
+      clipsEl.appendChild(b);
+    });
+  }
+
+  let token = 0;
+  async function show(key) {
+    if (!CHARACTERS[key]) key = "boss";
+    const my = ++token;
+    document.querySelectorAll(".tab").forEach(function (t) { t.setAttribute("aria-selected", String(t.dataset.key === key)); });
+    renderCard(key);
+    renderClips(key);
+    tSofa.hidden = key !== "em-nga";
+    setLoading("Đang pha " + CHARACTERS[key].title + "…");
+    try {
+      let entries;
+      if (key === "ca-nha") {
+        const keys = ["sofa", "em-nga", "boss", "em-ngo"];
+        const files = { "sofa": "glb/Sofa-Em-Nga.glb", "em-nga": "glb/Em-Nga.glb", "boss": "glb/Boss.glb", "em-ngo": "glb/Em-Ngo.glb" };
+        const loaded = await Promise.all(keys.map(function (k) { return load(files[k], "cả nhà"); }));
+        entries = keys.map(function (k, i) { return { key: k, gltf: loaded[i] }; });
+      } else {
+        const list = [{ key: key, gltf: await load(CHARACTERS[key].file, CHARACTERS[key].title) }];
+        if (CHARACTERS[key].prop) list.push({ key: "sofa", gltf: await load(CHARACTERS[key].prop, "sofa") });
+        entries = list;
+      }
+      if (my !== token) return;
+      clearScene();
+      state.key = key;
+      entries.forEach(function (e) {
+        const root = e.gltf.scene;
+        if (key === "ca-nha") place(root, GROUP[e.key]);
+        else if (e.key === "sofa") place(root, { pos: [0, 0, 0], rotY: 0 });
+        else if (key === "em-nga") place(root, { pos: [-0.04, sofaOn() ? 0.556 : 0, 0.08], rotY: 0, scale: sofaOn() ? 0.9 : 1 });
+        else place(root, { pos: [0, 0, 0], rotY: 0 });
+        if (e.key === "sofa" && key === "em-nga") root.visible = sofaOn();
+        else root.visible = true;
+        scene.add(root);
+        state.models.push(root);
+        if (e.gltf.animations.length) {
+          const m = makeMixer(e.gltf, root);
+          state.mixers.push(m.mixer);
+          if (key === "ca-nha") {
+            const main = { "em-nga": "Sleep", "boss": "Idle", "em-ngo": "Idle" }[e.key];
+            if (m.actions[main]) m.actions[main].reset().play();
+          } else {
+            Object.assign(state.actions, m.actions);
+          }
+        }
+      });
+      applyLook();
+      const dir = key === "ca-nha" ? [-0.35, 0.5, 1] : key === "em-nga" ? [-0.55, 0.55, 1] : [-0.6, 0.38, 1];
+      fit(state.models.filter(function (m) { return m.visible; }), dir, key === "ca-nha" ? 0.66 : 0.84);
+      if (CHARACTERS[key].main) play(CHARACTERS[key].main);
+      setLoading(null);
+    } catch (err) {
+      setLoading("Chưa tải được mô hình. Tải lại trang để thử lại.");
+    }
+  }
+
+  function sofaOn() { return tSofa.getAttribute("aria-pressed") === "true"; }
+
+  function toggle(btn, after) {
+    btn.addEventListener("click", function () {
+      btn.setAttribute("aria-pressed", String(btn.getAttribute("aria-pressed") !== "true"));
+      after();
+    });
+  }
+  toggle(tOutline, applyLook);
+  toggle(tToon, applyLook);
+  toggle(tSpin, function () { controls.autoRotate = tSpin.getAttribute("aria-pressed") === "true"; });
+  toggle(tSofa, function () { if (state.key === "em-nga") show("em-nga"); });
+
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.addEventListener("click", function () {
+      if (location.hash !== "#" + t.dataset.key) location.hash = t.dataset.key;
+      else show(t.dataset.key);
+    });
+  });
+  window.addEventListener("hashchange", function () { show(location.hash.slice(1)); });
+
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(stage);
+  resize();
+
+  const clock = new THREE.Clock();
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  renderer.setAnimationLoop(function () {
+    const dt = Math.min(clock.getDelta(), 0.05);
+    if (!reduce) state.mixers.forEach(function (m) { m.update(dt); });
+    controls.update();
+    renderer.render(scene, camera);
+  });
+
+  show(location.hash ? location.hash.slice(1) : "boss");
+})();
+</script>
